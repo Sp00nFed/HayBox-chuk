@@ -18,8 +18,8 @@ Config config = default_config;
 GpioButtonMapping button_mappings[] = {
     { BTN_LF1, 2  },
     { BTN_LF2, 3  },
-    { BTN_LF3, 4  },
-    { BTN_LF4, 5  },
+    { BTN_LF3, 10  },
+    { BTN_LF4, 8  },
     { BTN_LF5, 1  },
 
     { BTN_LT1, 6  },
@@ -56,13 +56,15 @@ const Pinout pinout = {
     .nes_latch = -1,
     .mux = -1,
     .nunchuk_detect = -1,
-    .nunchuk_sda = -1,
-    .nunchuk_scl = -1,
+    .nunchuk_sda = 4,
+    .nunchuk_scl = 5,
 };
 
 CommunicationBackend **backends = nullptr;
 size_t backend_count;
 KeyboardMode *current_kb_mode = nullptr;
+
+NunchukInput *nunchuk = nullptr;
 
 void setup() {
     static InputState inputs;
@@ -84,7 +86,9 @@ void setup() {
     if (!persistence.LoadConfig(config)) {
         persistence.SaveConfig(config);
     }
-
+    // Initialize NunchukInput with I2C Pins
+    nunchuk = new NunchukInput(Wire, -1, pinout.nunchuk_sda, pinout_nunchuk_scl);
+    
     // Create array of input sources to be used.
     static InputSource *input_sources[] = {};
     size_t input_source_count = sizeof(input_sources) / sizeof(InputSource *);
