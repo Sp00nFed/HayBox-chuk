@@ -86,8 +86,6 @@ void setup() {
     if (!persistence.LoadConfig(config)) {
         persistence.SaveConfig(config);
     }
-    // Initialize NunchukInput with I2C Pins
-    nunchuk = new NunchukInput(Wire, -1, pinout.nunchuk_sda, pinout_nunchuk_scl);
     
     // Create array of input sources to be used.
     static InputSource *input_sources[] = {};
@@ -111,16 +109,20 @@ void loop() {
     }
 }
 
-/* Button inputs are read from the second core */
+/* Button inputs are read from the second core at least prior to altering */
 
 void setup1() {
     while (backends == nullptr) {
         tight_loop_contents();
     }
+
+     // Create Nunchuk input source.
+    nunchuk = new NunchukInput(Wire, pinout.nunchuk_detect, pinout.nunchuk_sda, pinout.nunchuk_scl);
 }
 
 void loop1() {
     if (backends != nullptr) {
-        gpio_input.UpdateInputs(backends[0]->GetInputs());
+       nunchuk->UpdateInputs(backends[0]->GetInputs());
+        busy_wait_us(50);
     }
 }
